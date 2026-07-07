@@ -1,0 +1,13 @@
+name: dependency-review
+on:
+  pull_request:
+    branches: [main]
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  dependency-review:
+    permissions:
+      contents: read
+    uses: NDDev-it-com/nddev-ci-workflows/.github/workflows/public-dependency-review.yml@86f3e6d70a632561527379e5f962f57de81eb751 # 0.2.4
