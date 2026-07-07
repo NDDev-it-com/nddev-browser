@@ -21,6 +21,8 @@ describe('loadServerConfig', () => {
     delete process.env.BROWSEROS_INSTALL_ID
     delete process.env.BROWSEROS_CLIENT_ID
     delete process.env.BROWSEROS_AI_SDK_DEVTOOLS
+    delete process.env.NDDEV_BROWSER_BACKEND
+    delete process.env.NDDEV_BROWSER_CDP_PORT
   })
 
   afterEach(() => {
@@ -91,6 +93,53 @@ describe('loadServerConfig', () => {
     if (!result.ok) return
     assert.strictEqual(result.value.serverPort, 9100)
     assert.strictEqual(result.value.cdpPort, 9000)
+  })
+
+  it('routes the agent CDP to the CloakBrowser daemon when NDDEV_BROWSER_BACKEND=cloakbrowser', () => {
+    process.env.NDDEV_BROWSER_BACKEND = 'cloakbrowser'
+    const configPath = writeSidecarConfig()
+
+    const result = loadServerConfig([
+      'bun',
+      'src/index.ts',
+      '--config',
+      configPath,
+    ])
+
+    assert.strictEqual(result.ok, true)
+    if (!result.ok) return
+    assert.strictEqual(result.value.cdpPort, 9222)
+  })
+
+  it('honors an explicit NDDEV_BROWSER_CDP_PORT over the sidecar and the backend flag', () => {
+    process.env.NDDEV_BROWSER_BACKEND = 'cloakbrowser'
+    process.env.NDDEV_BROWSER_CDP_PORT = '9333'
+    const configPath = writeSidecarConfig()
+
+    const result = loadServerConfig([
+      'bun',
+      'src/index.ts',
+      '--config',
+      configPath,
+    ])
+
+    assert.strictEqual(result.ok, true)
+    if (!result.ok) return
+    assert.strictEqual(result.value.cdpPort, 9333)
+  })
+
+  it('rejects an out-of-range NDDEV_BROWSER_CDP_PORT instead of silently falling back', () => {
+    process.env.NDDEV_BROWSER_CDP_PORT = '70000'
+    const configPath = writeSidecarConfig()
+
+    const result = loadServerConfig([
+      'bun',
+      'src/index.ts',
+      '--config',
+      configPath,
+    ])
+
+    assert.strictEqual(result.ok, false)
   })
 
   it('requires --config instead of falling back to defaults or env', () => {

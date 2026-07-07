@@ -9,6 +9,42 @@ import { VERSION } from './version'
 
 const portSchema = z.number().int().min(1).max(65535)
 
+/**
+ * Default Chrome DevTools Protocol port of the managed CloakBrowser daemon
+ * (127.0.0.1:9222), installed and kept alive by the rldyour-new-mac-or-ubuntu
+ * bootstrap (launchd on macOS, systemd --user on Linux).
+ */
+const CLOAKBROWSER_DEFAULT_CDP_PORT = 9222
+
+/**
+ * Resolve the effective CDP port the agent server connects to.
+ *
+ * By default the agent drives the embedded BrowserOS Chromium via the sidecar
+ * `ports.cdp`. Setting `NDDEV_BROWSER_BACKEND=cloakbrowser` (or an explicit
+ * `NDDEV_BROWSER_CDP_PORT`) instead points the agent loop and every MCP tool at
+ * an external CDP endpoint on loopback -- the CloakBrowser stealth Chromium --
+ * so the agent platform runs decoupled from the browser shell. An out-of-range
+ * `NDDEV_BROWSER_CDP_PORT` is passed through and rejected by the port schema so
+ * misconfiguration surfaces as a clear config error rather than a silent
+ * fallback.
+ */
+function resolveCdpPort(
+  sidecarCdpPort: number | undefined,
+): number | undefined {
+  const explicit = cleanString(process.env.NDDEV_BROWSER_CDP_PORT)
+  if (explicit !== undefined) {
+    const parsed = Number(explicit)
+    return Number.isFinite(parsed) ? parsed : sidecarCdpPort
+  }
+  if (
+    cleanString(process.env.NDDEV_BROWSER_BACKEND)?.toLowerCase() ===
+    'cloakbrowser'
+  ) {
+    return CLOAKBROWSER_DEFAULT_CDP_PORT
+  }
+  return sidecarCdpPort
+}
+
 const ServerConfigSchema = z.object({
   cdpPort: portSchema,
   serverPort: portSchema,
@@ -99,7 +135,7 @@ function projectServerConfig(
   }
 
   const result = ServerConfigSchema.safeParse({
-    cdpPort: sidecar.ports.cdp,
+    cdpPort: resolveCdpPort(sidecar.ports.cdp),
     serverPort: sidecar.ports.server,
     agentPort: sidecar.ports.server,
     extensionPort: null,
