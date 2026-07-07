@@ -23,6 +23,15 @@
 
 </div>
 
+> **nddev-browser** is the NDDev fork of [BrowserOS](https://github.com/browseros-ai/BrowserOS)
+> (AGPL-3.0, upstream attribution preserved). Two fork-specific changes:
+> the agent + MCP layer can be routed through an external
+> [CloakBrowser](https://github.com/CloakHQ/CloakBrowser) stealth-Chromium CDP
+> endpoint so browser automation runs privacy-first and decoupled from the
+> browser shell (`NDDEV_BROWSER_BACKEND=cloakbrowser`), and the fork
+> auto-synchronizes with upstream via the `Upstream Sync` workflow. See
+> [`docs/nddev-fork.md`](docs/nddev-fork.md).
+
 BrowserOS is an open-source Chromium fork that runs AI agents natively. **The privacy-first alternative to ChatGPT Atlas, Perplexity Comet, and Dia.**
 
 Use your own API keys or run local models with Ollama. Your data never leaves your machine.

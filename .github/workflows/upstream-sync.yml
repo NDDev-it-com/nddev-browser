@@ -1,0 +1,108 @@
+name: Upstream Sync
+
+# Keep NDDev-it-com/nddev-browser automatically synchronized with the upstream
+# browseros-ai/BrowserOS while preserving this fork's own commits (the
+# self-contained submodule removal and the CloakBrowser CDP routing).
+#
+# Strategy: merge (never fast-forward, because the fork has diverged; never
+# force-push). A clean merge is pushed straight to main so the fork stays
+# current hands-off. A conflicting merge is aborted and reported as a tracking
+# issue for manual resolution, so upstream changes never clobber the fork.
+
+on:
+  schedule:
+    # Every 6 hours, offset from the top of the hour.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: 'Upstream ref to sync from'
+        required: false
+        default: 'main'
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  UPSTREAM_REPO: browseros-ai/BrowserOS
+  UPSTREAM_REF: ${{ github.event.inputs.upstream_ref || 'main' }}
+
+jobs:
+  sync:
+    name: Merge upstream into main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name 'nddev-browser-sync[bot]'
+          git config user.email 'nddev-browser-sync@users.noreply.github.com'
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch upstream "${UPSTREAM_REF}" --no-tags
+
+      - name: Attempt merge
+        id: merge
+        run: |
+          set -o pipefail
+          upstream_sha="$(git rev-parse "upstream/${UPSTREAM_REF}")"
+          echo "upstream_sha=${upstream_sha}" >> "$GITHUB_OUTPUT"
+
+          if git merge-base --is-ancestor "${upstream_sha}" HEAD; then
+            echo "status=up-to-date" >> "$GITHUB_OUTPUT"
+            echo "Fork already contains upstream ${upstream_sha}."
+            exit 0
+          fi
+
+          if git merge --no-edit --no-ff \
+              -m "chore(sync): merge upstream ${UPSTREAM_REPO}@${upstream_sha:0:9}" \
+              "${upstream_sha}"; then
+            echo "status=merged" >> "$GITHUB_OUTPUT"
+          else
+            git merge --abort || true
+            echo "status=conflict" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push merged main
+        if: steps.merge.outputs.status == 'merged'
+        run: git push origin HEAD:main
+
+      - name: Report conflict as tracking issue
+        if: steps.merge.outputs.status == 'conflict'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPSTREAM_SHA: ${{ steps.merge.outputs.upstream_sha }}
+        run: |
+          short="${UPSTREAM_SHA:0:9}"
+          title="Upstream sync conflict: ${UPSTREAM_REPO}@${short}"
+          {
+            echo "Automatic merge of \`${UPSTREAM_REPO}@${UPSTREAM_SHA}\` into \`main\` hit conflicts and was aborted (no force-push; the fork commits are preserved)."
+            echo
+            echo "Resolve locally, keeping the CloakBrowser CDP routing and the self-contained fork changes:"
+            echo
+            echo '```bash'
+            echo "git remote add upstream https://github.com/${UPSTREAM_REPO}.git"
+            echo "git fetch upstream ${UPSTREAM_REF}"
+            echo "git merge upstream/${UPSTREAM_REF}"
+            echo "git push origin main"
+            echo '```'
+          } > issue-body.md
+          existing="$(gh issue list --state open --search 'in:title Upstream sync conflict' --json number --jq '.[0].number' || true)"
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" --body-file issue-body.md
+          else
+            gh issue create --title "${title}" --body-file issue-body.md
+          fi
+          rm -f issue-body.md
