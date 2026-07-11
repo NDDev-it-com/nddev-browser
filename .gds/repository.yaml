@@ -1,0 +1,55 @@
+schema_version: 1
+
+repository:
+  id: "repo_01KX8PR6KH9TNXZBWCXQ4MXPNT"
+  display_name: "nddev-browser"
+  roles:
+    - "project"
+  lifecycle: "active"
+
+provider:
+  type: "github"
+  installation: "installation:github-organization"
+  repository_id: 1292714381
+  owner: "NDDev-it-com"
+  name: "nddev-browser"
+
+classification:
+  portfolios:
+    - "portfolio:organization-forks"
+  visibility_contract: "public"
+  data_classification: "public"
+
+policy:
+  profiles:
+    - "repository-default"
+    - "fork-default"
+  rollout_ring: "standard"
+
+git:
+  default_branch: "main"
+  integration: "pull-request"
+  branch_model: "task-branches"
+  handoff_pr: "preferred"
+  cleanup: "merged-only"
+
+agent:
+  context_profile: "project-default"
+  generated_agents: true
+  serena:
+    enabled: false
+    provenance_required: false
+
+fork:
+  upstream:
+    provider: "github"
+    repository_id: 985839104
+    owner: "browseros-ai"
+    name: "BrowserOS"
+  policy: "maintained-patch"
+  sync_branch: "main"
+  preserve_fork_commits: true
+  allow_force_sync: false
+
+release:
+  mode: "none"
