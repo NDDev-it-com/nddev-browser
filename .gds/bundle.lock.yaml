@@ -1,20 +1,20 @@
-# GENERATED FILE — DO NOT EDIT DIRECTLY
+# GENERATED FILE - DO NOT EDIT DIRECTLY
 schema_version: 1
 
 bundle:
   version: "0.1.0-dev"
   release_sequence: 0
   channel: "development"
-  source_commit: "96c240d6750a912a1c7b516fd474c051d247e8c3"
-  digest: "sha256:abc8dd5238c4ebf2af095c22a6a169e249735e2adbcba7440e4fa4aa2058cea5"
+  source_commit: "d1569516f0023b729738cf57a151ae73661495e1"
+  digest: "sha256:2f36c9427b7ea978f23e4a0f1dc48688716daad40cebc17ca3fbb0e42d20dc79"
 
 projection:
-  input_digest: "sha256:d649924c42c23a7e7dbeac452ba8a14de7cea37d6588591df1ec9f2f4177ce82"
-  output_digest: "sha256:009df1834ddb85c848c1a864cc7225740f7e254f4e155180fe1004c1f3b1e6c2"
+  input_digest: "sha256:dfa0b988ceb93c5fc415c33b14b871405d0cfc769f84cdd78bc5007040cc6ee1"
+  output_digest: "sha256:c65d6bfb64896055d79969ce3f843925986bcda41d60b574d775a97953a92a56"
   files:
     - path: ".claude/CLAUDE.md"
-      digest: "sha256:ec5ca52e5c5d805be47318e300637f5f7077d55d60b71a034d2635ba0584d8c2"
+      digest: "sha256:8d4ded0d4ac40df1737f2b4cebefebb4d2ac52b63b225b3adf424cb64a7b7862"
     - path: ".gds/compiled-policy.json"
       digest: "sha256:4c8269073e5dc23d9b9c1f0a542e8b70847ff52656fb2a337d2beb9a3df0ff80"
     - path: "AGENTS.md"
-      digest: "sha256:09094193c9900c2a4b9f9e308fa3c4d17be93b73bb139fa68198dd6f93bf10a8"
+      digest: "sha256:95a877b0733ca2b29ebb2c799f635449df09ddc01c1663ae062fbff74b259722"
