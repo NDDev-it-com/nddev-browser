@@ -1,4 +1,4 @@
-/** Pins the Claw homepage's hero, running grid, and recent activity sections. */
+/** Pins the first-run Cockpit onboarding state for an empty repository. */
 
 import { describe, expect, it, mock } from 'bun:test'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -26,6 +26,25 @@ mock.module('@/modules/api/audit.hooks', () => ({
   useTaskScreenshotBaseUrl: () => null,
 }))
 
+const useBrowserosConnections = Object.assign(
+  () => ({ data: { connections: [] }, isPending: false }),
+  { getKey: () => ['browseros-connections'] },
+)
+
+mock.module('@/modules/api/connections.hooks', () => ({
+  useBrowserosConnections,
+  useConnectBrowseros: () => ({
+    isPending: false,
+    variables: undefined,
+    mutateAsync: async () => ({ installed: true }),
+  }),
+  useDisconnectBrowseros: () => ({
+    isPending: false,
+    variables: undefined,
+    mutateAsync: async () => ({ installed: false }),
+  }),
+}))
+
 const { Cockpit } = await import('./Cockpit')
 
 function renderApp(): string {
@@ -42,12 +61,12 @@ function renderApp(): string {
 }
 
 describe('Cockpit (v2)', () => {
-  it('renders the hero and activity header (running grid hides when no agents)', () => {
+  it('renders first-run onboarding when no agents or activity exist', () => {
     const html = renderApp()
-    expect(html).toContain('working on')
-    expect(html).toContain('Recent activity')
-    // No agents in the stub data means RunningGrid returns null.
+    expect(html).toContain('Get started')
+    expect(html).toContain('Ask your agent to try it.')
     expect(html).not.toContain('Running now')
+    expect(html).not.toContain('Recent activity')
   })
 
   it('does NOT render an add-profile tile in the default v2 build', () => {
@@ -56,10 +75,10 @@ describe('Cockpit (v2)', () => {
     expect(html).not.toContain('harness . logins . guardrails')
   })
 
-  it('shows only the recent-activity empty state when registry is empty (Running now hides)', () => {
+  it('hides ready-state empty sections during first-run onboarding', () => {
     const html = renderApp()
     expect(html).not.toContain('No agents connected')
     expect(html).not.toContain('Running now')
-    expect(html).toContain('No recent activity')
+    expect(html).not.toContain('No recent activity')
   })
 })
