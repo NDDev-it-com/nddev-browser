@@ -25,7 +25,7 @@ export function Cockpit() {
     variables: { limit: ONBOARDING_PROBE_LIMIT },
   })
   // Only count harnesses that appear on the /mcp screen. Hidden ones
-  // (Hermes, OpenClaw, Gemini CLI, retired Claude Desktop) may be
+  // (Hermes, OpenClaw, retired Google CLI aliases, retired Claude Desktop) may be
   // preinstalled but are never something the reader intentionally
   // connected, so lighting up 'MCP installed' for them is misleading.
   const hasConnection =
