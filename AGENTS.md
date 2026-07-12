@@ -2,9 +2,9 @@
 GENERATED FILE - DO NOT EDIT DIRECTLY
 generator: gds
 bundle: 0.1.0-dev
-source-commit: bb9865d7d52e72787ad8f95ab7e70a0869d784aa
-input-digest: sha256:fd63de7dc191ef986840e9d495823ab2fb4c4756dc2ff428bd35e47d26a61313
-output-digest: sha256:2b70b06c9a21e9903f7e5c9572a5851e81749d108430726e44fb6251cfbddeec
+source-commit: c93a1c90d7010a713ac9030f8fbbd9b28e2f15ad
+input-digest: sha256:bf9fe3883bdbd4ea4699d62420cf117a66aaf9e53994984e4d3113bd059cdefa
+output-digest: sha256:c55170d4a8b9876154d85acf397ebd85ab004011f469a031ce91cb0fdee24c97
 edit-source:
   - .gds/repository.yaml
   - policies/base/repository-default.yaml
@@ -39,7 +39,12 @@ edit-source:
 
 ## Development
 
-- No repository-owned verification command is declared; report it as `NOT_PROVEN`.
+- Test: `cd packages/browseros-agent && bun run lint`.
+- Test: `cd packages/browseros-agent && VITE_PUBLIC_BROWSEROS_API=http://localhost:3000 bun run --cwd apps/app wxt prepare`.
+- Test: `cd packages/browseros-agent && bun run --cwd apps/app codegen`.
+- Test: `cd packages/browseros-agent && bun run typecheck`.
+- Test: `cd packages/browseros-agent && bun run fallow`.
+- Test: `cd packages/browseros-agent && bun run test`.
 
 ## Agent routing
 
