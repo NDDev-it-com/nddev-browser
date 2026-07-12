@@ -33,6 +33,18 @@ git:
   handoff_pr: "preferred"
   cleanup: "merged-only"
 
+verification:
+  commands:
+    test:
+      - "cd packages/browseros-agent && bun run lint"
+      - "cd packages/browseros-agent && VITE_PUBLIC_BROWSEROS_API=http://localhost:3000 bun run --cwd apps/app wxt prepare"
+      - "cd packages/browseros-agent && bun run --cwd apps/app codegen"
+      - "cd packages/browseros-agent && bun run typecheck"
+      - "cd packages/browseros-agent && bun run fallow"
+      - "cd packages/browseros-agent && bun run test"
+  required:
+    - "test"
+
 agent:
   context_profile: "project-default"
   generated_agents: true
