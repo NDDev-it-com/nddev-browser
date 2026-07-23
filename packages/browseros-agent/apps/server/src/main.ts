@@ -74,7 +74,7 @@ export class Application {
     try {
       await createHttpServer({
         port: this.config.serverPort,
-        host: '0.0.0.0',
+        mcpAllowRemote: this.config.mcpAllowRemote,
         version: VERSION,
         browser,
         browserSession,

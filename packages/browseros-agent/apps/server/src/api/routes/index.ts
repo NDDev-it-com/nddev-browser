@@ -68,7 +68,10 @@ export function createApiRoutes(deps: CreateApiRoutesDeps) {
   return (
     new Hono<Env>()
       .use('/*', cors(defaultCorsConfig))
-      .use('/*', requireTrustedOrigin())
+      .use(
+        '/*',
+        requireTrustedOrigin({ allowRemote: config.mcpAllowRemote === true }),
+      )
       .route('/system/health', createHealthRoute({ browser }))
       .route('/system/shutdown', createShutdownRoute({ onShutdown }))
       // Compatibility aliases for shipped browsers that still probe root paths

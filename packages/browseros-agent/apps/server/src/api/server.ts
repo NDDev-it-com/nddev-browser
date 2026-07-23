@@ -46,9 +46,22 @@ async function assertPortAvailable(port: number): Promise<void> {
 }
 
 /** Creates the Hono app and Bun server after wiring process-level dependencies. */
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', '::1', 'localhost'])
+
 export async function createHttpServer(config: HttpServerConfig) {
-  const { port, host = '0.0.0.0', browserosId } = config
+  const { port, browserosId } = config
   const { onShutdown } = config
+
+  // Fail closed: bind loopback by default. A non-loopback interface is bound
+  // only under an explicit remote policy; requesting one without it is a fatal
+  // misconfiguration rather than a silent LAN/container exposure.
+  const allowRemote = config.mcpAllowRemote === true
+  const host = config.host ?? (allowRemote ? '0.0.0.0' : '127.0.0.1')
+  if (!allowRemote && !LOOPBACK_HOSTS.has(host)) {
+    throw new Error(
+      `Refusing to bind non-loopback host "${host}" without an explicit remote policy (mcpAllowRemote)`,
+    )
+  }
 
   const tokenManager = browserosId
     ? initializeOAuth(getDb(), browserosId)

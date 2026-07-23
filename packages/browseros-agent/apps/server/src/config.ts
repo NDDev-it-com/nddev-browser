@@ -30,19 +30,27 @@ const CLOAKBROWSER_DEFAULT_CDP_PORT = 9222
  */
 function resolveCdpPort(
   sidecarCdpPort: number | undefined,
-): number | undefined {
+): ConfigResult<number | undefined> {
   const explicit = cleanString(process.env.NDDEV_BROWSER_CDP_PORT)
   if (explicit !== undefined) {
+    // Fail closed: a malformed explicit port must surface as a config error,
+    // never silently fall back to the embedded sidecar CDP endpoint.
     const parsed = Number(explicit)
-    return Number.isFinite(parsed) ? parsed : sidecarCdpPort
+    if (!Number.isInteger(parsed)) {
+      return {
+        ok: false,
+        error: `NDDEV_BROWSER_CDP_PORT must be an integer port, got "${explicit}"`,
+      }
+    }
+    return { ok: true, value: parsed }
   }
   if (
     cleanString(process.env.NDDEV_BROWSER_BACKEND)?.toLowerCase() ===
     'cloakbrowser'
   ) {
-    return CLOAKBROWSER_DEFAULT_CDP_PORT
+    return { ok: true, value: CLOAKBROWSER_DEFAULT_CDP_PORT }
   }
-  return sidecarCdpPort
+  return { ok: true, value: sidecarCdpPort }
 }
 
 const ServerConfigSchema = z.object({
@@ -134,8 +142,10 @@ function projectServerConfig(
     }
   }
 
+  const cdpPort = resolveCdpPort(sidecar.ports.cdp)
+  if (!cdpPort.ok) return cdpPort
   const result = ServerConfigSchema.safeParse({
-    cdpPort: resolveCdpPort(sidecar.ports.cdp),
+    cdpPort: cdpPort.value,
     serverPort: sidecar.ports.server,
     agentPort: sidecar.ports.server,
     extensionPort: null,

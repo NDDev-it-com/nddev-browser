@@ -142,6 +142,22 @@ describe('loadServerConfig', () => {
     assert.strictEqual(result.ok, false)
   })
 
+  it('rejects a non-numeric NDDEV_BROWSER_CDP_PORT instead of silently falling back to the sidecar', () => {
+    process.env.NDDEV_BROWSER_CDP_PORT = 'not-a-port'
+    const configPath = writeSidecarConfig()
+
+    const result = loadServerConfig([
+      'bun',
+      'src/index.ts',
+      '--config',
+      configPath,
+    ])
+
+    assert.strictEqual(result.ok, false)
+    if (result.ok) return
+    assert.ok(result.error.includes('NDDEV_BROWSER_CDP_PORT'))
+  })
+
   it('requires --config instead of falling back to defaults or env', () => {
     process.env.BROWSEROS_CDP_PORT = '9222'
     process.env.BROWSEROS_SERVER_PORT = '9223'
