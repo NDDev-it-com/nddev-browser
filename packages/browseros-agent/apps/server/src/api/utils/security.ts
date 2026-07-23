@@ -21,8 +21,11 @@ const LOCALHOST_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
  * @returns true if request is from localhost, false otherwise
  */
 export function isLocalhostRequest(c: Context<Env>): boolean {
-  const server = c.env.server
+  const server = c.env?.server
   const request = c.req.raw
+
+  // Fail closed: without a bound server we cannot prove the peer is loopback.
+  if (!server) return false
 
   // 1. CHECK ACTUAL TCP CONNECTION IP (cannot be spoofed)
   const socketAddr = server.requestIP(request)

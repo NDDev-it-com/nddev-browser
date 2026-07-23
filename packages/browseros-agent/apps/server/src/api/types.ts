@@ -77,6 +77,10 @@ export type Env = {
 export interface HttpServerConfig {
   port: number
   host?: string
+  // When false/undefined the server binds loopback only and rejects
+  // non-loopback callers. Only an explicit remote policy permits a
+  // non-loopback bind. See src/api/middleware/require-trusted-origin.ts.
+  mcpAllowRemote?: boolean
 
   version: string
   browser: Browser
