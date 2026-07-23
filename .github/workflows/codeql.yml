@@ -17,6 +17,6 @@ jobs:
       contents: read
       security-events: write
       actions: read
-    uses: NDDev-it-com/nddev-ci-workflows/.github/workflows/public-codeql.yml@1acba687361415b3f5942acceb40b228bb0387fd # 0.2.4
+    uses: NDDev-it-com/ci-workflows/.github/workflows/public-codeql.yml@2ccb80e96f5771b6a6b4eae63a4f47e232906dc7 # 0.12.0
     with:
       languages: '["actions"]'
